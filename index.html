@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employee Dashboard</title>
+<style>
+:root{--cream:#F7F2E3;--paper:#FFFCF3;--line:#E2DAC1;--forest:#27432F;--moss:#4E7A57;--sage:#CFE0C8;--ink:#1F2A22;--muted:#6B7568;--warn:#B4472F;--warnbg:#F6DDD3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+h1,h2,h3{font-family:Georgia,'Times New Roman',serif;font-weight:700;margin:0}
+header{background:var(--forest);color:var(--cream);padding:28px 24px}
+.wrap{max-width:1150px;margin:0 auto}
+header .wrap{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+header h1{font-size:28px}
+header p{margin:2px 0 0;color:var(--sage)}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--moss);padding:9px 16px;background:var(--paper);color:var(--forest)}
+button:hover{background:var(--sage)}
+button.primary{background:var(--moss);color:#fff;border-color:var(--moss)}
+button.primary:hover{background:#3f6647}
+button.danger{color:var(--warn);border-color:var(--warn)}
+button.danger:hover{background:var(--warnbg)}
+header button.primary{background:var(--cream);color:var(--forest);border-color:var(--cream);font-weight:600}
+header button.primary:hover{background:var(--sage)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--moss);outline-offset:2px}
+main{padding:24px}
+.stats{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:20px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:14px 20px;min-width:150px}
+.stat b{font:700 28px Georgia,serif;color:var(--forest);display:block}
+.stat span{color:var(--muted);font-size:13px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.tools input{flex:1;min-width:220px}
+input,select,textarea{font:inherit;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+.tablebox{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+.count{display:inline-block;min-width:28px;text-align:center;font-weight:700;color:var(--forest);background:var(--sage);border-radius:99px;padding:1px 10px;cursor:help;border-bottom:2px dotted var(--moss)}
+.addlogbtn{margin-left:6px;padding:2px 9px!important}
+#tip{position:fixed;z-index:50;display:none;max-width:340px;background:var(--forest);color:var(--cream);border-radius:10px;padding:12px 14px;box-shadow:0 10px 30px rgba(20,40,25,.35);font-size:13px;pointer-events:none}
+#tip h4{margin:0 0 8px;font:700 14px Georgia,serif;color:var(--sage)}
+#tip .t{padding:6px 0;border-top:1px solid rgba(207,224,200,.25)}
+#tip .t b{color:#fff}
+#tip .t span{color:var(--sage)}
+.neg{color:var(--warn)!important}
+.bal{font-weight:700;color:var(--forest)}
+.lstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px}
+.lstats .stat{min-width:0;padding:10px 14px}
+.lstats .stat b{font-size:24px}
+@media(max-width:600px){.lstats{grid-template-columns:1fr}}
+.rowedit{padding:5px 12px;font-size:13px;font-weight:600;white-space:nowrap}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line)}
+th{background:var(--sage);color:var(--forest);font-size:13px;font-weight:700}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:#F1EBD4}
+tr:last-child td{border-bottom:0}
+.name{font-weight:600}
+.sub{color:var(--muted);font-size:13px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600}
+.pill.yes{background:var(--warnbg);color:var(--warn)}
+.pill.no{background:var(--sage);color:var(--forest)}
+.empty{padding:40px;text-align:center;color:var(--muted)}
+dialog{border:0;border-radius:14px;padding:0;width:min(680px,94vw);max-height:92vh;background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgba(20,40,25,.35)}
+dialog::backdrop{background:rgba(31,42,34,.55)}
+.mhead{background:var(--forest);color:var(--cream);padding:18px 24px;display:flex;justify-content:space-between;align-items:center}
+.mhead h2{font-size:21px}
+.mhead button{background:transparent;border-color:var(--sage);color:var(--cream);padding:4px 11px}
+.mbody{padding:20px 24px;overflow-y:auto;max-height:calc(92vh - 140px)}
+.mfoot{padding:14px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--cream)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid .full{grid-column:1/-1}
+label{display:block;font-size:13px;font-weight:600;color:var(--forest);margin-bottom:4px}
+.sec{font:700 16px Georgia,serif;color:var(--forest);margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--sage)}
+.sec:first-child{margin-top:0}
+.check{display:flex;align-items:center;gap:10px}
+.check input{width:20px;height:20px}
+.check label{margin:0}
+dl{display:grid;grid-template-columns:150px 1fr;gap:8px 14px;margin:0}
+dt{color:var(--muted)}dd{margin:0;word-break:break-word}
+.log{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:#fff}
+.log button{padding:2px 9px;font-size:13px}
+.addlog{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end;margin-top:12px;padding:14px;background:var(--cream);border:1px dashed var(--moss);border-radius:10px}
+.addlog .full{grid-column:1/-1}
+.log .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.log .file{margin-top:4px;font-size:13px;color:var(--moss)}
+.hint{font-size:12px;color:var(--muted);margin-top:3px}
+.upcoming{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.panel h3{background:var(--sage);color:var(--forest);padding:10px 16px;font-size:16px}
+.panel .item{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;padding:10px 16px}
+.panel .item:hover{background:#F1EBD4}
+.panel .item:last-child{border-bottom:0}
+.panel .when{color:var(--moss);font-weight:600;white-space:nowrap;font-size:13px}
+.panel .none{padding:16px;color:var(--muted)}
+@media(max-width:700px){.upcoming{grid-template-columns:1fr}}
+@media(max-width:600px){.grid,.addlog{grid-template-columns:1fr}dl{grid-template-columns:1fr}dt{margin-top:6px}}
+@media(prefers-reduced-motion:no-preference){dialog[open]{animation:pop .18s ease-out}@keyframes pop{from{transform:scale(.97);opacity:0}}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div><h1>Employee Dashboard</h1><p>Profiles, PIPs and coaching logs in one place</p></div>
+  <button class="primary" id="addBtn">+ Add employee</button>
+</div></header>
+
+<main><div class="wrap">
+  <div class="stats">
+    <div class="stat"><b id="sTotal">0</b><span>Employees</span></div>
+    <div class="stat"><b id="sPip">0</b><span>On an active PIP</span></div>
+    <div class="stat"><b id="sLogs">0</b><span>Coaching logs filed</span></div>
+  </div>
+  <div class="upcoming">
+    <div class="panel"><h3>Upcoming birthdays · next 2 months</h3><div id="bdays"></div></div>
+    <div class="panel"><h3>Work milestones · next 2 months</h3><div id="miles"></div></div>
+  </div>
+  <div class="tools">
+    <input id="search" type="search" placeholder="Search by name, client or branch" aria-label="Search employees">
+    <select id="pipFilter" style="width:auto" aria-label="Filter by PIP">
+      <option value="">All employees</option><option value="yes">Active PIP only</option><option value="no">No PIP</option>
+    </select>
+  </div>
+  <div class="tablebox"><table>
+    <thead><tr><th>Employee</th><th>Client</th><th>Branch</th><th>Hire date</th><th>Active PIP?</th><th>Coaching logs</th><th>Last coaching</th><th>Vacation balance</th><th>Sick balance</th><th>Unpaid used</th><th>Actions</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table><div class="empty" id="empty" hidden>No employees found. Click “Add employee” to create the first one.</div></div>
+</div></main>
+
+<!-- Add / Edit window -->
+<dialog id="formDlg">
+  <form method="dialog" id="empForm" style="margin:0">
+    <div class="mhead"><h2 id="formTitle">Add employee</h2><button type="button" data-close aria-label="Close">✕</button></div>
+    <div class="mbody">
+      <div class="sec">Personal details</div>
+      <div class="grid">
+        <div class="full"><label for="f_name">Complete name</label><input id="f_name" required></div>
+        <div><label for="f_email">Personal email</label><input id="f_email" type="email"></div>
+        <div><label for="f_phone">Cellphone number</label><input id="f_phone" type="tel"></div>
+        <div><label for="f_birth">Birthdate</label><input id="f_birth" type="date"></div>
+        <div><label for="f_addr">Address</label><input id="f_addr"></div>
+        <div class="full"><label for="f_home">Home address</label><input id="f_home"></div>
+      </div>
+      <div class="sec">Work details</div>
+      <div class="grid">
+        <div><label for="f_hire">Hire date</label><input id="f_hire" type="date"></div>
+        <div><label for="f_branch">Branch</label><input id="f_branch"></div>
+        <div><label for="f_client">Client name</label><input id="f_client"></div>
+        <div><label for="f_cemail">Client email</label><input id="f_cemail" type="email"></div>
+        <div class="full check"><input id="f_pip" type="checkbox"><label for="f_pip">This employee is on an active PIP</label></div>
+      </div>
+    </div>
+    <div class="mfoot"><button type="button" data-close>Cancel</button><button class="primary" type="submit">Save employee</button></div>
+  </form>
+</dialog>
+
+<!-- Details window -->
+<dialog id="viewDlg">
+  <div class="mhead"><h2 id="vName"></h2><button type="button" data-close aria-label="Close">✕</button></div>
+  <div class="mbody" id="vBody"></div>
+  <div class="mfoot">
+    <button class="danger" id="delBtn">Delete employee</button>
+    <button class="primary" id="editBtn">Edit info</button>
+  </div>
+</dialog>
+
+<div id="tip" role="tooltip"></div>
+<script>
+const KEY = "employee-dashboard-v1";
+const $ = id => document.getElementById(id);
+const fields = {name:"f_name",email:"f_email",phone:"f_phone",birth:"f_birth",addr:"f_addr",home:"f_home",hire:"f_hire",branch:"f_branch",client:"f_client",cemail:"f_cemail"};
+let people = load(), editingId = null, viewingId = null, returnToView = false;
+const TYPES = ["Verbal warning","Written warning","Final written warning","Performance coaching","Attendance coaching","Other"];
+// Uploaded files are kept in IndexedDB (bigger than normal browser storage)
+function fdb(){return new Promise((res,rej)=>{const r=indexedDB.open("employee-files",1);r.onupgradeneeded=()=>r.result.createObjectStore("files");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function putFile(id,blob){const d=await fdb();return new Promise((res,rej)=>{const t=d.transaction("files","readwrite");t.objectStore("files").put(blob,id);t.oncomplete=res;t.onerror=()=>rej(t.error);});}
+async function getFile(id){const d=await fdb();return new Promise((res,rej)=>{const q=d.transaction("files").objectStore("files").get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+async function delFile(id){try{const d=await fdb();d.transaction("files","readwrite").objectStore("files").delete(id);}catch(e){}}
+
+function load(){
+  try{ const d = JSON.parse(localStorage.getItem(KEY)); if(Array.isArray(d)) return d; }catch(e){}
+  return [
+    {id:"1",name:"Maria Santos (sample)",email:"maria@example.com",phone:"0917 000 0001",birth:"1994-03-12",addr:"PO Box 12",home:"123 Sample St, Quezon City",hire:"2023-02-01",branch:"Makati",client:"Acme Corp",cemail:"contact@acme.example",pip:true,logs:[{id:"a",type:"Verbal warning",date:"2026-09-15",infraction:"Late 3 times in one week"},{id:"b",type:"Written warning",date:"2026-10-20",infraction:"Missed quality target"}]},
+    {id:"2",name:"John Cruz (sample)",email:"john@example.com",phone:"0917 000 0002",birth:"1990-08-25",addr:"",home:"45 Example Ave, Manila",hire:"2024-06-10",branch:"Ortigas",client:"Globex",cemail:"ops@globex.example",pip:false,logs:[]}
+  ];
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(people)); }catch(e){ alert("Could not save in this browser."); } }
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = d => d ? new Date(d+"T00:00:00").toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"}) : "—";
+const sortedLogs = p => [...p.logs].sort((a,b)=>b.date.localeCompare(a.date));
+const lastLog = p => p.logs.length ? sortedLogs(p)[0].date : "";
+
+const pd = d => new Date(d+"T00:00:00");
+function addMonths(d,m){const r=new Date(d.getFullYear(),d.getMonth()+m,1);const last=new Date(r.getFullYear(),r.getMonth()+1,0).getDate();r.setDate(Math.min(d.getDate(),last));return r;}
+function onYear(d,y){const last=new Date(y,d.getMonth()+1,0).getDate();return new Date(y,d.getMonth(),Math.min(d.getDate(),last));}
+const fdate = d => d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+const fmonth = d => d.toLocaleDateString("en-US",{month:"long",year:"numeric"});
+function service(m){const y=Math.floor(m/12),r=m%12;return [y?y+(y>1?" years":" year"):"",r?r+(r>1?" months":" month"):""].filter(Boolean).join(", ")||"Less than a month";}
+function monthsSince(h){const t=new Date();let m=(t.getFullYear()-h.getFullYear())*12+t.getMonth()-h.getMonth();if(t.getDate()<h.getDate())m--;return Math.max(m,0);}
+const LK = {vl:"Vacation leave used",sl:"Sick leave used",unpaid:"Unpaid leave used","vl+":"Vacation credit added","sl+":"Sick credit added"};
+const num = n => String(+Number(n).toFixed(2));
+function bal(p){
+  const L = p.leave || [], elig = !!p.hire && monthsSince(pd(p.hire)) >= 6;
+  const sum = k => L.filter(x=>x.kind===k).reduce((n,x)=>n+Number(x.days),0);
+  return {elig, vl:(elig?5:0)+sum("vl+")-sum("vl"), sl:(elig?5:0)+sum("sl+")-sum("sl"), unpaid:sum("unpaid")};
+}
+const leaveCells = p => { const b = bal(p); return `<td class="bal ${b.vl<0?"neg":""}">${num(b.vl)}</td><td class="bal ${b.sl<0?"neg":""}">${num(b.sl)}</td><td class="bal">${num(b.unpaid)}</td>`; };
+function renderUpcoming(){
+  const t=new Date();t.setHours(0,0,0,0);const end=addMonths(t,2);
+  const when=d=>{const n=Math.round((d-t)/864e5);return n===0?"Today":n===1?"Tomorrow":"in "+n+" days";};
+  const b=[],a=[];
+  people.forEach(p=>{
+    if(p.birth){const bd=pd(p.birth);for(const y of [t.getFullYear(),t.getFullYear()+1]){const c=onYear(bd,y);if(c>=t){if(c<=end)b.push({p,date:c,age:y-bd.getFullYear()});break;}}}
+    if(p.hire){const h=pd(p.hire);for(const m of [6,...Array.from({length:60},(_,i)=>(i+1)*12)]){const c=addMonths(h,m);if(c>end)break;if(c>=t)a.push({p,date:c,m});}}
+  });
+  const byDate=(x,y)=>x.date-y.date;
+  const item=(id,title,sub,w)=>`<button class="item" data-id="${id}"><span><b>${esc(title)}</b><div class="sub">${sub}</div></span><span class="when">${w}</span></button>`;
+  $("bdays").innerHTML=b.sort(byDate).map(x=>item(x.p.id,x.p.name,`Turns ${x.age} · ${fdate(x.date)}`,when(x.date))).join("")||'<div class="none">No birthdays in the next 2 months.</div>';
+  $("miles").innerHTML=a.sort(byDate).map(x=>item(x.p.id,x.p.name,`${x.m===6?"6-month mark":(x.m/12)+"-year anniversary"} · ${fmonth(x.date)} · ${service(x.m)} of service`,when(x.date))).join("")||'<div class="none">No 6-month marks or anniversaries in the next 2 months.</div>';
+}
+function render(){
+  renderUpcoming();
+  const q = $("search").value.toLowerCase(), pf = $("pipFilter").value;
+  const list = people.filter(p => (!q || [p.name,p.client,p.branch].join(" ").toLowerCase().includes(q)) && (!pf || (pf==="yes")===p.pip));
+  $("rows").innerHTML = list.map(p => `<tr data-id="${p.id}" tabindex="0">
+    <td><div class="name">${esc(p.name)}</div><div class="sub">${esc(p.email)}</div></td>
+    <td>${esc(p.client)||"—"}</td><td>${esc(p.branch)||"—"}</td><td>${fmt(p.hire)}</td>
+    <td><span class="pill ${p.pip?"yes":"no"}">${p.pip?"Yes":"No"}</span></td>
+    <td><span class="count" tabindex="0" data-tip="${p.id}">${p.logs.length}</span> <button class="rowedit addlogbtn" data-addlog="${p.id}" title="Upload a coaching log for ${esc(p.name)}">+ Upload</button></td><td>${fmt(lastLog(p))}</td>${leaveCells(p)}
+    <td><button class="rowedit" data-edit="${p.id}" aria-label="Edit ${esc(p.name)}">✎ Edit</button></td></tr>`).join("");
+  $("empty").hidden = list.length > 0;
+  $("sTotal").textContent = people.length;
+  $("sPip").textContent = people.filter(p=>p.pip).length;
+  $("sLogs").textContent = people.reduce((n,p)=>n+p.logs.length,0);
+}
+
+function openView(id){
+  const p = people.find(x=>x.id===id); if(!p) return;
+  viewingId = id;
+  $("vName").textContent = p.name;
+  const lb = bal(p);
+  const leaveList = [...(p.leave||[])].sort((a,b)=>b.date.localeCompare(a.date)).map(v=>`<div class="log"><div><b>${fmt(v.date)}</b> <span class="pill no">${LK[v.kind]}</span><div>${num(v.days)} day${Number(v.days)===1?"":"s"}${v.note?" · "+esc(v.note):""}</div></div><button class="danger" data-delleave="${v.id}">Remove</button></div>`).join("");
+  const row = (k,v) => `<dt>${k}</dt><dd>${esc(v)||"—"}</dd>`;
+  const logs = sortedLogs(p).map(l => `<div class="log"><div><b>${fmt(l.date)}</b> <span class="pill no">${esc(l.type||"Coaching")}</span><div>${esc(l.infraction)}</div>${l.fileName?`<div class="file">📎 ${esc(l.fileName)}</div>`:""}</div>
+      <div class="acts">${l.fileName?`<button data-openlog="${l.id}">Open file</button><button data-dllog="${l.id}">Download</button>`:""}<button class="danger" data-dellog="${l.id}">Remove</button></div></div>`).join("") || `<p class="sub">No coaching logs yet.</p>`;
+  $("vBody").innerHTML = `
+    <div class="sec">Personal details</div>
+    <dl>${row("Personal email",p.email)}${row("Cellphone",p.phone)}${row("Birthdate",p.birth?fmt(p.birth):"")}${row("Address",p.addr)}${row("Home address",p.home)}</dl>
+    <div class="sec">Work details</div>
+    <dl>${row("Hire date",p.hire?fmt(p.hire):"")}${row("Length of service",p.hire?service(monthsSince(pd(p.hire))):"")}${row("Branch",p.branch)}${row("Client name",p.client)}${row("Client email",p.cemail)}
+    <dt>Active PIP?</dt><dd><span class="pill ${p.pip?"yes":"no"}">${p.pip?"Yes":"No"}</span></dd></dl>
+    <div class="sec">Leave credits</div>
+    <div class="lstats">
+      <div class="stat"><b class="${lb.vl<0?"neg":""}">${num(lb.vl)}</b><span>Vacation leave balance</span></div>
+      <div class="stat"><b class="${lb.sl<0?"neg":""}">${num(lb.sl)}</b><span>Sick leave balance</span></div>
+      <div class="stat"><b>${num(lb.unpaid)}</b><span>Unpaid leave used (days)</span></div>
+    </div>
+    <p class="sub" style="margin:0 0 10px">${!p.hire?"Add a hire date to calculate leave credits.":lb.elig?"5 vacation and 5 sick credits were granted automatically at the 6-month mark ("+fdate(addMonths(pd(p.hire),6))+").":"Not yet at 6 months. 5 vacation and 5 sick credits are granted on "+fdate(addMonths(pd(p.hire),6))+"."}</p>
+    ${leaveList}
+    <form class="addlog" id="leaveForm">
+      <div class="full"><b>Add a leave entry</b></div>
+      <div><label for="v_kind">Entry type</label><select id="v_kind">${Object.entries(LK).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></div>
+      <div><label for="v_date">Date</label><input id="v_date" type="date" required></div>
+      <div><label for="v_days">Number of days</label><input id="v_days" type="number" min="0.5" step="0.5" value="1" required></div>
+      <div><label for="v_note">Note (optional)</label><input id="v_note" placeholder="e.g. Flu, family trip"></div>
+      <div class="full"><button class="primary" type="submit">Save leave entry</button></div>
+    </form>
+    <div class="sec">Coaching logs (${p.logs.length}) — last dated ${fmt(lastLog(p))}</div>
+    ${logs}
+    <form class="addlog" id="logForm">
+      <div class="full"><b>Add a coaching log</b></div>
+      <div><label for="l_type">Type of coaching</label><select id="l_type">${TYPES.map(t=>`<option>${t}</option>`).join("")}</select></div>
+      <div><label for="l_date">Serve date</label><input id="l_date" type="date" required></div>
+      <div class="full"><label for="l_inf">Infraction</label><input id="l_inf" required placeholder="What happened?"></div>
+      <div class="full"><label for="l_file">Upload coaching log PDF (optional)</label><input id="l_file" type="file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.heic,.txt"><div class="hint">PDF recommended (Word documents and photos also work). Up to 10 MB.</div></div>
+      <div class="full"><button class="primary" type="submit">Save coaching log</button></div>
+    </form>`;
+  if(!$("viewDlg").open) $("viewDlg").showModal();
+}
+
+function openForm(id){
+  editingId = id || null;
+  const p = id ? people.find(x=>x.id===id) : null;
+  $("formTitle").textContent = p ? "Edit employee" : "Add employee";
+  for(const k in fields) $(fields[k]).value = p ? (p[k]||"") : "";
+  $("f_pip").checked = p ? p.pip : false;
+  $("formDlg").showModal();
+}
+
+$("addBtn").onclick = () => openForm();
+$("editBtn").onclick = () => { returnToView = true; const id = viewingId; $("viewDlg").close(); openForm(id); };
+$("delBtn").onclick = () => {
+  const p = people.find(x=>x.id===viewingId);
+  if(p && confirm("Delete "+p.name+" and all their coaching logs? This cannot be undone.")){
+    p.logs.forEach(l=>{ if(l.fileName) delFile(l.id); }); people = people.filter(x=>x.id!==viewingId); save(); $("viewDlg").close(); render();
+  }
+};
+document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => b.closest("dialog").close());
+
+$("empForm").onsubmit = e => {
+  e.preventDefault();
+  const data = {pip:$("f_pip").checked};
+  for(const k in fields) data[k] = $(fields[k]).value.trim();
+  if(editingId){ Object.assign(people.find(x=>x.id===editingId), data); }
+  else { people.push({id:String(Date.now()), logs:[], ...data}); }
+  save(); render(); $("formDlg").close();
+  if(editingId && returnToView) openView(editingId);
+};
+
+$("vBody").addEventListener("submit", async e => {
+  if(e.target.id==="leaveForm"){
+    e.preventDefault();
+    const q = people.find(x=>x.id===viewingId);
+    (q.leave = q.leave || []).push({id:String(Date.now()), kind:$("v_kind").value, date:$("v_date").value, days:Number($("v_days").value), note:$("v_note").value.trim()});
+    save(); render(); openView(viewingId); return;
+  }
+  if(e.target.id!=="logForm") return;
+  e.preventDefault();
+  const p = people.find(x=>x.id===viewingId);
+  const log = {id:String(Date.now()), type:$("l_type").value, date:$("l_date").value, infraction:$("l_inf").value.trim()};
+  const f = $("l_file").files[0];
+  if(f){
+    if(f.size > 10*1024*1024){ alert("That file is over 10 MB. Please choose a smaller file."); return; }
+    try{ await putFile(log.id, f); log.fileName = f.name; }
+    catch(err){ alert("This browser could not store the file, so the log was not saved."); return; }
+  }
+  p.logs.push(log);
+  save(); render(); openView(viewingId);
+});
+$("vBody").addEventListener("click", async e => {
+  const d = e.target.dataset; const p = people.find(x=>x.id===viewingId);
+  if(d.dellog){
+    if(!confirm("Remove this coaching log and its uploaded file?")) return;
+    delFile(d.dellog); p.logs = p.logs.filter(l=>l.id!==d.dellog); save(); render(); openView(viewingId);
+  } else if(d.delleave){
+    if(!confirm("Remove this leave entry?")) return;
+    p.leave = p.leave.filter(v=>v.id!==d.delleave); save(); render(); openView(viewingId);
+  } else if(d.openlog || d.dllog){
+    const id = d.openlog || d.dllog, log = p.logs.find(l=>l.id===id);
+    const w = d.openlog ? window.open("","_blank") : null;
+    try{
+      const blob = await getFile(id); if(!blob) throw 0;
+      const url = URL.createObjectURL(blob);
+      if(w) w.location = url;
+      else { const a = document.createElement("a"); a.href = url; a.download = log.fileName; a.click(); }
+    }catch(err){ if(w) w.close(); alert("Could not find that file in this browser."); }
+  }
+});
+
+document.querySelector(".upcoming").addEventListener("click", e => { const b = e.target.closest("[data-id]"); if(b) openView(b.dataset.id); });
+$("rows").addEventListener("click", e => {
+  const ab = e.target.closest("[data-addlog]");
+  if(ab){ openView(ab.dataset.addlog); const lf=$("logForm"); lf.scrollIntoView({block:"center"}); $("l_type").focus(); return; }
+  const eb = e.target.closest("[data-edit]");
+  if(eb){ returnToView = false; openForm(eb.dataset.edit); return; }
+  const tr = e.target.closest("tr"); if(tr) openView(tr.dataset.id);
+});
+$("rows").addEventListener("keydown", e => { if(e.key==="Enter" && e.target.tagName==="TR") openView(e.target.dataset.id); });
+const tip = $("tip");
+function showTip(el){
+  const p = people.find(x=>x.id===el.dataset.tip); if(!p) return;
+  const logs = sortedLogs(p);
+  tip.innerHTML = `<h4>Coaching logs (${logs.length})</h4>` + (logs.map(l=>`<div class="t"><b>${esc(l.type||"Coaching")}</b> <span>· served ${fmt(l.date)}${l.fileName?" · 📎 PDF on file":""}</span><div>${esc(l.infraction)}</div></div>`).join("") || "<div>No coaching logs yet.</div>");
+  tip.style.display = "block";
+  const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = Math.min(r.left, innerWidth - w - 12), y = r.bottom + 8;
+  if(y + h > innerHeight - 8) y = Math.max(8, r.top - h - 8);
+  tip.style.left = Math.max(8,x)+"px"; tip.style.top = y+"px";
+}
+const hideTip = () => tip.style.display = "none";
+$("rows").addEventListener("mouseover", e => { const el = e.target.closest("[data-tip]"); if(el) showTip(el); });
+$("rows").addEventListener("mouseout", e => { if(e.target.closest("[data-tip]")) hideTip(); });
+$("rows").addEventListener("focusin", e => { const el = e.target.closest("[data-tip]"); if(el) showTip(el); });
+$("rows").addEventListener("focusout", hideTip);
+window.addEventListener("scroll", hideTip, true);
+$("search").oninput = $("pipFilter").onchange = render;
+render();
+</script>
+</body>
+</html>
